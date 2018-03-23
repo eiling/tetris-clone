@@ -4,6 +4,16 @@ public class Block {
     public float[] colorVec;
     public boolean show;
 
+    private static final float[][] color = {
+            {1f, 0f, 0f},
+            {0f, 1f, 0f},
+            {0f, 0f, 1f},
+            {1f, 0f, 1f},
+            {1f, 1f, 0f},
+            {0f, 1f, 1f},
+            {1f, 1f, 1f}
+    };
+
     private static final float[] red = {1f, 0f, 0f};
     private static final float[] green = {0f, 1f, 0f};
     private static final float[] blue = {0f, 0f, 1f};

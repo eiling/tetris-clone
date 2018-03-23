@@ -6,12 +6,27 @@ public class Piece {
     private int x1,x2,x3,x4;
     private int y1,y2,y3,y4;
 
-    public byte color;
+    private byte colorByte;
 
     private float cx, cy;
 
+    private static final float[][] color = {
+            {1f, 0f, 0f},
+            {0f, 1f, 0f},
+            {0f, 0f, 1f},
+            {1f, 0f, 1f},
+            {1f, 1f, 0f},
+            {0f, 1f, 1f},
+            {1f, 1f, 1f}
+    };
+
+    private static final float scale = 0.09f; //static?
+    private static final float translateX = -0.45f;
+    private static final float translateY = -0.9f;
+    private static final float border = 0.005f;
+
     public void set(byte type){
-        color = type;
+        colorByte = type;
 
         if(type==0){
             x1 = 4; y1 = 18;
@@ -163,10 +178,10 @@ public class Piece {
         matrix[y3][x3].show = true;
         matrix[y4][x4].show = true;
 
-        matrix[y1][x1].setColor(color);
-        matrix[y2][x2].setColor(color);
-        matrix[y3][x3].setColor(color);
-        matrix[y4][x4].setColor(color);
+        matrix[y1][x1].setColor(colorByte);
+        matrix[y2][x2].setColor(colorByte);
+        matrix[y3][x3].setColor(colorByte);
+        matrix[y4][x4].setColor(colorByte);
     }
     public boolean checkOverlap(Block[][] matrix){
         if(matrix[y1][x1].show) return true;
@@ -174,5 +189,38 @@ public class Piece {
         if(matrix[y3][x3].show) return true;
         if(matrix[y4][x4].show) return true;
         return false;
+    }
+    public void put(FloatBuffer buffer){
+        buffer.put(x1 * scale + translateX + border).put(y1 * scale + translateY + border).put(color[colorByte]);
+        buffer.put((x1+1) * scale + translateX - border).put(y1 * scale + translateY + border).put(color[colorByte]);
+        buffer.put((x1+1) * scale + translateX - border).put((y1+1) * scale + translateY - border).put(color[colorByte]);
+
+        buffer.put(x1 * scale + translateX + border).put(y1 * scale + translateY + border).put(color[colorByte]);
+        buffer.put((x1+1) * scale + translateX - border).put((y1+1) * scale + translateY - border).put(color[colorByte]);
+        buffer.put(x1 * scale + translateX + border).put((y1+1) * scale + translateY - border).put(color[colorByte]);
+
+        buffer.put(x2 * scale + translateX + border).put(y2 * scale + translateY + border).put(color[colorByte]);
+        buffer.put((x2+1) * scale + translateX - border).put(y2 * scale + translateY + border).put(color[colorByte]);
+        buffer.put((x2+1) * scale + translateX - border).put((y2+1) * scale + translateY - border).put(color[colorByte]);
+
+        buffer.put(x2 * scale + translateX + border).put(y2 * scale + translateY + border).put(color[colorByte]);
+        buffer.put((x2+1) * scale + translateX - border).put((y2+1) * scale + translateY - border).put(color[colorByte]);
+        buffer.put(x2 * scale + translateX + border).put((y2+1) * scale + translateY - border).put(color[colorByte]);
+
+        buffer.put(x3 * scale + translateX + border).put(y3 * scale + translateY + border).put(color[colorByte]);
+        buffer.put((x3+1) * scale + translateX - border).put(y3 * scale + translateY + border).put(color[colorByte]);
+        buffer.put((x3+1) * scale + translateX - border).put((y3+1) * scale + translateY - border).put(color[colorByte]);
+
+        buffer.put(x3 * scale + translateX + border).put(y3 * scale + translateY + border).put(color[colorByte]);
+        buffer.put((x3+1) * scale + translateX - border).put((y3+1) * scale + translateY - border).put(color[colorByte]);
+        buffer.put(x3 * scale + translateX + border).put((y3+1) * scale + translateY - border).put(color[colorByte]);
+
+        buffer.put(x4 * scale + translateX + border).put(y4 * scale + translateY + border).put(color[colorByte]);
+        buffer.put((x4+1) * scale + translateX - border).put(y4 * scale + translateY + border).put(color[colorByte]);
+        buffer.put((x4+1) * scale + translateX - border).put((y4+1) * scale + translateY - border).put(color[colorByte]);
+
+        buffer.put(x4 * scale + translateX + border).put(y4 * scale + translateY + border).put(color[colorByte]);
+        buffer.put((x4+1) * scale + translateX - border).put((y4+1) * scale + translateY - border).put(color[colorByte]);
+        buffer.put(x4 * scale + translateX + border).put((y4+1) * scale + translateY - border).put(color[colorByte]);
     }
 }

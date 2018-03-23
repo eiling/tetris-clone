@@ -30,11 +30,10 @@ public class Game {
     private boolean running;
     private boolean restart;
 
-    private final double targetTime = 1000 / 60;
+    private final double targetTime = 1000 / 30;
 
     private final double movementFreq = 500;
     private double lastMovement;
-    private double movementLag = 0;
 
     private Block[][] matrix;
     private Piece piece;
@@ -46,7 +45,7 @@ public class Game {
 
     private static final float[] grey = {0.3f, 0.3f, 0.3f};
 
-    public Game(){
+    private Game(){
         init();
         do {
             setup();
@@ -126,7 +125,12 @@ public class Game {
             else if(key == GLFW_KEY_RIGHT && action == GLFW_PRESS) piece.moveRight(matrix);
             else if(key == GLFW_KEY_UP && action == GLFW_PRESS) piece.rotate();
             else if(key == GLFW_KEY_DOWN && action == GLFW_PRESS) piece.hardDrop(matrix);
+            else if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) running = false;
         }));
+        /*glfwSetKeyCallback(window, GLFWKeyCallback.create((window, key, scancode, action, mods) -> {
+            if(key == GLFW_KEY_UP && action == GLFW_PRESS) piece.rotate();
+            else if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) running = false;
+        }));*/
 
         running = true;
     }
@@ -138,24 +142,26 @@ public class Game {
         while(running){
             double start = System.currentTimeMillis();
 
-            //update();
-            //if (piece.checkOverlap(matrix)) running = false;
+            update();
+            if (piece.checkOverlap(matrix)) running = false;
 
             putGrid();
-            //putPiece();
+            putPiece();
             putMatrix();
             render();
 
             glfwSwapBuffers(window);
             glfwPollEvents();
 
-            if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS || glfwWindowShouldClose(window))
+            if(glfwWindowShouldClose(window))
                 running = false;
 
             double now = System.currentTimeMillis();
             double elapsed = now - start;
             Game.wait(targetTime - elapsed, now);
         }
+
+        try{Thread.sleep(1000);} catch (InterruptedException ignored){}
     }
     private void dispose(){
         glDisableVertexAttribArray(0);
@@ -169,9 +175,8 @@ public class Game {
     }
     private void update(){
         double now = System.currentTimeMillis();
-        movementLag = now - lastMovement;
 
-        if(movementLag >= movementFreq){
+        if(now - lastMovement >= movementFreq){
             lastMovement = now;
             if(piece.stop(matrix)) {
                 piece.place(matrix);
@@ -199,7 +204,7 @@ public class Game {
         matrix[19] = temp;
 
         for(int j = 0; j < 10; j++)
-            matrix[19][i].show = false;
+            matrix[19][j].show = false;
     }
     private void putMatrix(){
         for(int y = 0; y < 20; y++)
@@ -224,7 +229,7 @@ public class Game {
             }
     }
     private void putPiece(){
-        //figure this out...
+        piece.put(buffer);
         vertices += 24;
     }
     private void putGrid(){
@@ -264,9 +269,9 @@ public class Game {
         buffer.clear();
         vertices = 0;
     }
-    public static void wait(double time, double start){
+    private static void wait(double time, double start){
         while(System.currentTimeMillis() - start < time){
-            try{ Thread.sleep(1); } catch (InterruptedException e) {}
+            try{ Thread.sleep(1); } catch (InterruptedException ignored) {}
         }
     }
     public static void main(String[] args){
