@@ -26,6 +26,6 @@ public class Piece2 {
         if(rot==0)
             return m[y][x];
         else if(rot==1)
-            return
+            return m[x][y];
     }
 }
