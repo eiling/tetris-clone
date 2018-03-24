@@ -79,7 +79,7 @@ public class Piece {
             cx = 4.0f; cy = 19.0f;
         }
     }
-    public void rotate(){
+    public void rotate(Block[][] matrix){
         int x, y;
 
         x = x1; y = y1;
@@ -93,6 +93,66 @@ public class Piece {
 
         x = x4; y = y4;
         x4 = -y+(int)(cy+cx); y4 = x-(int)(cx-cy);
+
+        int leftmost = x1;
+        if(x2 < leftmost) {
+            leftmost = x2;
+        }
+        if(x3 < leftmost) {
+            leftmost = x3;
+        }
+        if(x4 < leftmost) {
+            leftmost = x4;
+        }
+
+        while(leftmost < 0){
+            leftmost++;
+            x1++;
+            x2++;
+            x3++;
+            x4++;
+            cx++;
+        }
+
+        int rightmost = x1;
+        if(x2 > rightmost) {
+            rightmost = x2;
+        }
+        if(x3 > rightmost) {
+            rightmost = x3;
+        }
+        if(x4 > rightmost) {
+            rightmost = x4;
+        }
+
+        while(rightmost > 9){
+            rightmost--;
+            x1--;
+            x2--;
+            x3--;
+            x4--;
+            cx--;
+        }
+
+        int upmost = y1;
+        if(y2 > upmost) {
+            upmost = y2;
+        }
+        if(y3 > upmost) {
+            upmost = y3;
+        }
+        if(y4 > upmost) {
+            upmost = y4;
+        }
+
+        while(upmost > 19){
+            upmost--;
+            y1--;
+            y2--;
+            y3--;
+            y4--;
+            cy--;
+        }
     }
     public void moveLeft(Block[][] matrix){
         int leftmost = x1;

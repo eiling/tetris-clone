@@ -32,7 +32,7 @@ public class Game {
 
     private final double targetTime = 1000 / 30;
 
-    private final double movementFreq = 500;
+    private final double movementFreq = 1000;
     private double lastMovement;
 
     private Block[][] matrix;
@@ -71,9 +71,6 @@ public class Game {
 
         piece.set((byte) ThreadLocalRandom.current().nextInt(0, 6 + 1));
 
-        vertices = 0;
-
-        running = true;
         restart = false;
     }
     private void init(){
@@ -123,30 +120,36 @@ public class Game {
         glfwSetKeyCallback(window, GLFWKeyCallback.create((window, key, scancode, action, mods) -> {
             if(key == GLFW_KEY_LEFT && action == GLFW_PRESS) piece.moveLeft(matrix);
             else if(key == GLFW_KEY_RIGHT && action == GLFW_PRESS) piece.moveRight(matrix);
-            else if(key == GLFW_KEY_UP && action == GLFW_PRESS) piece.rotate();
+            else if(key == GLFW_KEY_UP && action == GLFW_PRESS) piece.rotate(matrix);
             else if(key == GLFW_KEY_DOWN && action == GLFW_PRESS) piece.hardDrop(matrix);
             else if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) running = false;
         }));
-        /*glfwSetKeyCallback(window, GLFWKeyCallback.create((window, key, scancode, action, mods) -> {
-            if(key == GLFW_KEY_UP && action == GLFW_PRESS) piece.rotate();
-            else if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) running = false;
-        }));*/
+    }
+    private void startScreen(){
+        vertices = 0;
 
-        running = true;
+        boolean start = false;
+        while(!start){
+            //drawStartScreen();
+            if(glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) start = true;
+            wait(targetTime, System.currentTimeMillis());
+        }
     }
     private void loop(){
         try{Thread.sleep(1000);} catch (InterruptedException ignored){} //prep time
 
         lastMovement = System.currentTimeMillis();
 
+        running = true;
         while(running){
             double start = System.currentTimeMillis();
 
             update();
+
             if (piece.checkOverlap(matrix)) running = false;
+            else putPiece();
 
             putGrid();
-            putPiece();
             putMatrix();
             render();
 
@@ -200,7 +203,7 @@ public class Game {
     private void removeLine(int i){
         Block[] temp = matrix[i];
         for(int k = i; k < 19; k++)
-            matrix[i] = matrix[i+1];
+            matrix[k] = matrix[k+1];
         matrix[19] = temp;
 
         for(int j = 0; j < 10; j++)
