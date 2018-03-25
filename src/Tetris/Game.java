@@ -43,7 +43,16 @@ public class Game {
     private static final float translateY = -0.9f;
     private static final float border = 0.005f;
 
-    private static final float[] grey = {0.3f, 0.3f, 0.3f};
+    private static final float[][] color = {
+            {1f, 0f, 0f},
+            {0f, 1f, 0f},
+            {0f, 0f, 1f},
+            {1f, 0f, 1f},
+            {1f, 1f, 0f},
+            {0f, 1f, 1f},
+            {1f, 1f, 1f},
+            {0.3f, 0.3f, 0.3f}
+    };
 
     private Game(){
         init();
@@ -214,18 +223,18 @@ public class Game {
             for(int x = 0; x < 10; x++){
                 if(matrix[y][x].show) {
                     buffer.put(x * scale + translateX + border).put(y * scale + translateY + border)
-                            .put(matrix[y][x].colorVec);
+                            .put(color[matrix[y][x].color]);
                     buffer.put((x + 1) * scale + translateX - border).put(y * scale + translateY + border)
-                            .put(matrix[y][x].colorVec);
+                            .put(color[matrix[y][x].color]);
                     buffer.put((x + 1) * scale + translateX - border).put((y + 1) * scale + translateY - border)
-                            .put(matrix[y][x].colorVec);
+                            .put(color[matrix[y][x].color]);
 
                     buffer.put(x * scale + translateX + border).put(y * scale + translateY + border)
-                            .put(matrix[y][x].colorVec);
+                            .put(color[matrix[y][x].color]);
                     buffer.put((x + 1) * scale + translateX - border).put((y + 1) * scale + translateY - border)
-                            .put(matrix[y][x].colorVec);
+                            .put(color[matrix[y][x].color]);
                     buffer.put(x * scale + translateX + border).put((y + 1) * scale + translateY - border)
-                            .put(matrix[y][x].colorVec);
+                            .put(color[matrix[y][x].color]);
 
                     vertices += 6;
                 }
@@ -237,22 +246,22 @@ public class Game {
     }
     private void putGrid(){
         for(float x = 0f; x <= 0.99f; x += 0.09f) {
-            buffer.put(-0.4525f + x).put(-0.9025f).put(grey);
-            buffer.put(-0.4475f + x).put(-0.9025f).put(grey);
-            buffer.put(-0.4475f + x).put(0.9025f).put(grey);
-            buffer.put(-0.4525f + x).put(-0.9025f).put(grey);
-            buffer.put(-0.4475f + x).put(0.9025f).put(grey);
-            buffer.put(-0.4525f + x).put(0.9025f).put(grey);
+            buffer.put(-0.4525f + x).put(-0.9025f).put(color[7]);
+            buffer.put(-0.4475f + x).put(-0.9025f).put(color[7]);
+            buffer.put(-0.4475f + x).put(0.9025f).put(color[7]);
+            buffer.put(-0.4525f + x).put(-0.9025f).put(color[7]);
+            buffer.put(-0.4475f + x).put(0.9025f).put(color[7]);
+            buffer.put(-0.4525f + x).put(0.9025f).put(color[7]);
 
             vertices += 6;
         }
         for(float y = 0f; y <= 1.89f; y += 0.09f) {
-            buffer.put(-0.4475f).put(-0.9025f + y).put(grey);
-            buffer.put(0.4475f).put(-0.9025f + y).put(grey);
-            buffer.put(0.4475f).put(-0.8975f + y).put(grey);
-            buffer.put(-0.4475f).put(-0.9025f + y).put(grey);
-            buffer.put(0.4475f).put(-0.8975f + y).put(grey);
-            buffer.put(-0.4475f).put(-0.8975f + y).put(grey);
+            buffer.put(-0.4475f).put(-0.9025f + y).put(color[7]);
+            buffer.put(0.4475f).put(-0.9025f + y).put(color[7]);
+            buffer.put(0.4475f).put(-0.8975f + y).put(color[7]);
+            buffer.put(-0.4475f).put(-0.9025f + y).put(color[7]);
+            buffer.put(0.4475f).put(-0.8975f + y).put(color[7]);
+            buffer.put(-0.4475f).put(-0.8975f + y).put(color[7]);
 
             vertices += 6;
         }

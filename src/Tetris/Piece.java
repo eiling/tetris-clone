@@ -217,6 +217,34 @@ public class Piece {
 
         cy--;
     }
+    private int leftmost(){
+        int l = x1;
+        if(x2 < l) l = x2;
+        if(x3 < l) l = x3;
+        if(x4 < l) l = x4;
+        return l;
+    }
+    private int rightmost(){
+        int r = x1;
+        if(x2 > r) r = x2;
+        if(x3 > r) r = x3;
+        if(x4 > r) r = x4;
+        return r;
+    }
+    private int downmost(){
+        int d = y1;
+        if(y2 < d) d = y2;
+        if(y3 < d) d = y3;
+        if(y4 < d) d = y4;
+        return d;
+    }
+    private int upmost(){
+        int u = y1;
+        if(y2 > u) u = y2;
+        if(y3 > u) u = y3;
+        if(y4 > u) u = y4;
+        return u;
+    }
     public boolean stop(Block[][] matrix){
         if(y1 == 0) return true;
         if(matrix[y1-1][x1].show) return true;
