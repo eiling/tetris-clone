@@ -78,7 +78,7 @@ public class Game {
 
         if(piece == null) piece = new Piece3(matrix);
 
-        piece.set((byte) ThreadLocalRandom.current().nextInt(0, 1 + 1));
+        piece.set((byte) ThreadLocalRandom.current().nextInt(0, 6 + 1));
 
         restart = false;
     }
@@ -129,8 +129,12 @@ public class Game {
         glfwSetKeyCallback(window, GLFWKeyCallback.create((window, key, scancode, action, mods) -> {
             if(key == GLFW_KEY_LEFT && action == GLFW_PRESS) piece.moveLeft();
             else if(key == GLFW_KEY_RIGHT && action == GLFW_PRESS) piece.moveRight();
-            else if(key == GLFW_KEY_UP && action == GLFW_PRESS) piece.rotate();
-            else if(key == GLFW_KEY_DOWN && action == GLFW_PRESS) piece.hardDrop();
+            else if(key == GLFW_KEY_UP && action == GLFW_PRESS) {
+                piece.rotate();
+                piece.rotate();
+                piece.rotate();
+            } else if(key == GLFW_KEY_DOWN && action == GLFW_PRESS) piece.rotate();
+            else if(key == GLFW_KEY_SPACE && action == GLFW_PRESS) piece.hardDrop();
             else if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) running = false;
         }));
     }
@@ -182,7 +186,7 @@ public class Game {
             lastMovement = now;
             if(piece.shouldStop()) {
                 piece.place();
-                piece.set((byte) ThreadLocalRandom.current().nextInt(0, 1 + 1));
+                piece.set((byte) ThreadLocalRandom.current().nextInt(0, 6 + 1));
             } else
                 piece.moveDown();
         }
