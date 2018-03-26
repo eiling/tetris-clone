@@ -36,12 +36,12 @@ public class Game {
     private double lastMovement;
 
     private Block[][] matrix;
-    private Piece piece;
+    private Piece3 piece;
 
     private static final float scale = 0.09f; //static?
     private static final float translateX = -0.45f;
     private static final float translateY = -0.9f;
-    private static final float border = 0.005f;
+    private static final float border = 0.002f;
 
     private static final float[][] color = {
             {1f, 0f, 0f},
@@ -76,9 +76,9 @@ public class Game {
                 for(int j = 0; j < 10; j++)
                     matrix[i][j].show = false;
 
-        if(piece == null) piece = new Piece();
+        if(piece == null) piece = new Piece3(matrix);
 
-        piece.set((byte) ThreadLocalRandom.current().nextInt(0, 6 + 1));
+        piece.set((byte) ThreadLocalRandom.current().nextInt(0, 1 + 1));
 
         restart = false;
     }
@@ -127,22 +127,12 @@ public class Game {
         glVertexAttribPointer(1, 3, GL_FLOAT, false, 5*Float.BYTES, 2*Float.BYTES);
 
         glfwSetKeyCallback(window, GLFWKeyCallback.create((window, key, scancode, action, mods) -> {
-            if(key == GLFW_KEY_LEFT && action == GLFW_PRESS) piece.moveLeft(matrix);
-            else if(key == GLFW_KEY_RIGHT && action == GLFW_PRESS) piece.moveRight(matrix);
-            else if(key == GLFW_KEY_UP && action == GLFW_PRESS) piece.rotate(matrix);
-            else if(key == GLFW_KEY_DOWN && action == GLFW_PRESS) piece.hardDrop(matrix);
+            if(key == GLFW_KEY_LEFT && action == GLFW_PRESS) piece.moveLeft();
+            else if(key == GLFW_KEY_RIGHT && action == GLFW_PRESS) piece.moveRight();
+            else if(key == GLFW_KEY_UP && action == GLFW_PRESS) piece.rotate();
+            else if(key == GLFW_KEY_DOWN && action == GLFW_PRESS) piece.hardDrop();
             else if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) running = false;
         }));
-    }
-    private void startScreen(){
-        vertices = 0;
-
-        boolean start = false;
-        while(!start){
-            //drawStartScreen();
-            if(glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) start = true;
-            wait(targetTime, System.currentTimeMillis());
-        }
     }
     private void loop(){
         try{Thread.sleep(1000);} catch (InterruptedException ignored){} //prep time
@@ -155,7 +145,7 @@ public class Game {
 
             update();
 
-            if (piece.checkOverlap(matrix)) running = false;
+            if (piece.collides()) running = false;
             else putPiece();
 
             putGrid();
@@ -190,9 +180,9 @@ public class Game {
 
         if(now - lastMovement >= movementFreq){
             lastMovement = now;
-            if(piece.stop(matrix)) {
-                piece.place(matrix);
-                piece.set((byte) ThreadLocalRandom.current().nextInt(0, 6 + 1));
+            if(piece.shouldStop()) {
+                piece.place();
+                piece.set((byte) ThreadLocalRandom.current().nextInt(0, 1 + 1));
             } else
                 piece.moveDown();
         }
@@ -241,8 +231,26 @@ public class Game {
             }
     }
     private void putPiece(){
-        piece.put(buffer);
-        vertices += 24;
+        for(int j = 0; j < 4; j++)
+            for(int i = 0; i < 4; i++)
+                if(piece.m[j][i]){
+                    int x = piece.x, y = piece.y;
+                    buffer.put((x + i) * scale + translateX + border).put((y + j) * scale + translateY + border)
+                            .put(color[piece.type]);
+                    buffer.put((x + i + 1) * scale + translateX - border).put((y + j) * scale + translateY + border)
+                            .put(color[piece.type]);
+                    buffer.put((x + i + 1) * scale + translateX - border).put((y + j + 1) * scale + translateY - border)
+                            .put(color[piece.type]);
+
+                    buffer.put((x + i) * scale + translateX + border).put((y + j) * scale + translateY + border)
+                            .put(color[piece.type]);
+                    buffer.put((x + i + 1) * scale + translateX - border).put((y + j + 1) * scale + translateY - border)
+                            .put(color[piece.type]);
+                    buffer.put((x + i) * scale + translateX + border).put((y + j + 1) * scale + translateY - border)
+                            .put(color[piece.type]);
+
+                    vertices += 6;
+                }
     }
     private void putGrid(){
         for(float x = 0f; x <= 0.99f; x += 0.09f) {

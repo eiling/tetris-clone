@@ -7,7 +7,4 @@ public class Block {
     public Block(){
         show = false;
     }
-    public void setColor(byte color){
-        this.color = color;
-    }
 }

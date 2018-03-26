@@ -266,10 +266,10 @@ public class Piece {
         matrix[y3][x3].show = true;
         matrix[y4][x4].show = true;
 
-        matrix[y1][x1].setColor(colorByte);
-        matrix[y2][x2].setColor(colorByte);
-        matrix[y3][x3].setColor(colorByte);
-        matrix[y4][x4].setColor(colorByte);
+        matrix[y1][x1].color = colorByte;
+        matrix[y2][x2].color = colorByte;
+        matrix[y3][x3].color = colorByte;
+        matrix[y4][x4].color = colorByte;
     }
     public boolean checkOverlap(Block[][] matrix){
         if(matrix[y1][x1].show) return true;
