@@ -46,17 +46,17 @@ public class Piece3{
             m[1][2] = true;
             y = 17; x = 3;
         } if(type == 5){
-            m[2][0] = true;
-            m[2][1] = true;
-            m[1][1] = true;
-            m[1][2] = true;
-            y = 17; x = 3;
-        } if(type == 6){
             m[1][0] = true;
             m[1][1] = true;
-            m[2][1] = true;
-            m[2][2] = true;
-            y = 17; x = 3;
+            m[0][1] = true;
+            m[0][2] = true;
+            y = 18; x = 3;
+        } if(type == 6){
+            m[0][0] = true;
+            m[0][1] = true;
+            m[1][1] = true;
+            m[1][2] = true;
+            y = 18; x = 3;
         }
     }
     public void rotate(){//test this out
@@ -84,7 +84,7 @@ public class Piece3{
         } else{
             for(int j = 0; j < 3; j++)
                 for(int i = 0; i < 3; i++)
-                    if(m[2-i][j]){
+                    if(m[j][i]){
                         if(y + 2 - i < 0 || y + 2 - i > 19) return;
                         if(x + j < 0 || x + j > 9) return;
                         if(matrix[y+2-i][x+j].show) return;

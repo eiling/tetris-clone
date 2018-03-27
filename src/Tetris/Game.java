@@ -32,9 +32,12 @@ public class Game {
 
     private final double targetTime = 1000 / 30;
 
-    private double movementFreq;
+    private double movementPeriod;
     private double lastMovement;
-    private final double increaseRatio = 0.01;
+    private final double increaseRatio = 0.05;
+    private double lastPeriod;
+
+    private boolean dropped;
 
     private Block[][] matrix;
     private Piece3 piece;
@@ -81,7 +84,9 @@ public class Game {
 
         piece.set((byte) ThreadLocalRandom.current().nextInt(0, 6 + 1));
 
-        movementFreq = 1000;
+        movementPeriod = 1000;
+
+        dropped = false;
 
         restart = false;
     }
@@ -136,8 +141,13 @@ public class Game {
                 piece.rotate();
                 piece.rotate();
                 piece.rotate();
-            } else if(key == GLFW_KEY_DOWN && action == GLFW_PRESS) piece.rotate();
-            else if(key == GLFW_KEY_SPACE && action == GLFW_PRESS) piece.hardDrop();
+            } else if(key == GLFW_KEY_X && action == GLFW_PRESS) piece.rotate();
+            else if(key == GLFW_KEY_DOWN && action == GLFW_PRESS) startFastFwd();
+            else if(key == GLFW_KEY_DOWN && action == GLFW_RELEASE) stopFastFwd();
+            else if(key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
+                piece.hardDrop();
+                dropped = true;
+            }
             else if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) running = false;
         }));
     }
@@ -185,10 +195,11 @@ public class Game {
     private void update(){
         double now = System.currentTimeMillis();
 
-        if(now - lastMovement >= movementFreq){
+        if(now - lastMovement >= movementPeriod || dropped){
+            dropped = false;
             lastMovement = now;
             if(piece.shouldStop()) {
-                movementFreq *= (1+increaseRatio);
+                movementPeriod *= (1-increaseRatio);
 
                 piece.place();
                 piece.set((byte) ThreadLocalRandom.current().nextInt(0, 6 + 1));
@@ -217,6 +228,13 @@ public class Game {
         for(int j = 0; j < 10; j++)
             matrix[19][j].show = false;
     }
+    private void startFastFwd(){
+        lastPeriod = movementPeriod;
+        movementPeriod = 25;
+    }
+    private void stopFastFwd(){
+        movementPeriod = lastPeriod;
+    }
     private void putMatrix(){
         for(int y = 0; y < 20; y++)
             for(int x = 0; x < 10; x++){
@@ -240,10 +258,10 @@ public class Game {
             }
     }
     private void putPiece(){
+        int x = piece.x, y = piece.y;
         for(int j = 0; j < 4; j++)
             for(int i = 0; i < 4; i++)
                 if(piece.m[j][i]){
-                    int x = piece.x, y = piece.y;
                     buffer.put((x + i) * scale + translateX + border).put((y + j) * scale + translateY + border)
                             .put(color[piece.type]);
                     buffer.put((x + i + 1) * scale + translateX - border).put((y + j) * scale + translateY + border)
@@ -262,7 +280,6 @@ public class Game {
                 }
     }
     private void putGhost(){
-
     }
     private void putGrid(){
         for(float x = 0f; x <= 0.99f; x += 0.09f) {
