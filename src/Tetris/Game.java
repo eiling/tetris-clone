@@ -32,8 +32,9 @@ public class Game {
 
     private final double targetTime = 1000 / 30;
 
-    private final double movementFreq = 1000;
+    private double movementFreq;
     private double lastMovement;
+    private final double increaseRatio = 0.01;
 
     private Block[][] matrix;
     private Piece3 piece;
@@ -79,6 +80,8 @@ public class Game {
         if(piece == null) piece = new Piece3(matrix);
 
         piece.set((byte) ThreadLocalRandom.current().nextInt(0, 6 + 1));
+
+        movementFreq = 1000;
 
         restart = false;
     }
@@ -185,6 +188,8 @@ public class Game {
         if(now - lastMovement >= movementFreq){
             lastMovement = now;
             if(piece.shouldStop()) {
+                movementFreq *= (1+increaseRatio);
+
                 piece.place();
                 piece.set((byte) ThreadLocalRandom.current().nextInt(0, 6 + 1));
             } else
@@ -255,6 +260,9 @@ public class Game {
 
                     vertices += 6;
                 }
+    }
+    private void putGhost(){
+
     }
     private void putGrid(){
         for(float x = 0f; x <= 0.99f; x += 0.09f) {
