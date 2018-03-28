@@ -99,6 +99,43 @@ public class Piece3{
         }
     }
     public void aRotate(){
+        if(type == 0) return;
+        if(type == 1){
+            for(int j = 0; j < 4; j++)
+                for(int i = 0; i < 4; i++)
+                    if(m[j][i]){
+                        if(y + i < 0 || y + i > 19) return;
+                        if(x + 3 - j < 0 || x + 3 - j > 9) return;
+                        if(matrix[y+i][x+3-j].show) return;
+                    }
+            for(int i = 0; i < 3; i++){
+                boolean temp = m[0][i];
+                m[0][i] = m[i][3];
+                m[i][3] = m[3][3-i];
+                m[3][3-i] = m[3-i][0];
+                m[3-i][0] = temp;
+            }
+            boolean temp = m[1][1];
+            m[1][1] = m[1][2];
+            m[1][2] = m[2][2];
+            m[2][2] = m[2][1];
+            m[2][1] = temp;
+        } else{
+            for(int j = 0; j < 3; j++)
+                for(int i = 0; i < 3; i++)
+                    if(m[j][i]){
+                        if(y + i < 0 || y + i > 19) return;
+                        if(x + 2 - j < 0 || x + 2 - j > 9) return;
+                        if(matrix[y+2-i][x+j].show) return;
+                    }
+            for(int i = 0; i < 2; i++){
+                boolean temp = m[0][i];
+                m[0][i] = m[i][2];
+                m[i][2] = m[2][2-i];
+                m[2][2-i] = m[2-i][0];
+                m[2-i][0] = temp;
+            }
+        }
     }
     public void moveRight(){
         for(int j = 0; j < 4; j++)
