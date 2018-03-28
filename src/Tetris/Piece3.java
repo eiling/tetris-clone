@@ -59,7 +59,7 @@ public class Piece3{
             y = 18; x = 3;
         }
     }
-    public void rotate(){//test this out
+    public void rotate(){
         if(type == 0) return;
         if(type == 1){
             for(int j = 0; j < 4; j++)
@@ -97,6 +97,8 @@ public class Piece3{
                 m[i][2] = temp;
             }
         }
+    }
+    public void aRotate(){
     }
     public void moveRight(){
         for(int j = 0; j < 4; j++)

@@ -135,13 +135,10 @@ public class Game {
         glVertexAttribPointer(1, 3, GL_FLOAT, false, 5*Float.BYTES, 2*Float.BYTES);
 
         glfwSetKeyCallback(window, GLFWKeyCallback.create((window, key, scancode, action, mods) -> {
-            if(key == GLFW_KEY_LEFT && action == GLFW_PRESS) piece.moveLeft();
-            else if(key == GLFW_KEY_RIGHT && action == GLFW_PRESS) piece.moveRight();
-            else if(key == GLFW_KEY_UP && action == GLFW_PRESS) {
-                piece.rotate();
-                piece.rotate();
-                piece.rotate();
-            } else if(key == GLFW_KEY_X && action == GLFW_PRESS) piece.rotate();
+            if(key == GLFW_KEY_LEFT && (action == GLFW_PRESS || action == GLFW_REPEAT)) piece.moveLeft();
+            else if(key == GLFW_KEY_RIGHT && (action == GLFW_PRESS || action == GLFW_REPEAT)) piece.moveRight();
+            else if(key == GLFW_KEY_UP && action == GLFW_PRESS) piece.aRotate();
+            else if(key == GLFW_KEY_X && action == GLFW_PRESS) piece.rotate();
             else if(key == GLFW_KEY_DOWN && action == GLFW_PRESS) startFastFwd();
             else if(key == GLFW_KEY_DOWN && action == GLFW_RELEASE) stopFastFwd();
             else if(key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
