@@ -41,7 +41,7 @@ public class Game {
     private boolean dropped;
 
     private Block[][] matrix;
-    private Piece3 piece;
+    private Piece piece;
     private IntQueue queue;
 
     private static final float scale = 0.09f; //static?
@@ -82,7 +82,7 @@ public class Game {
                 for(int j = 0; j < 10; j++)
                     matrix[i][j].show = false;
 
-        if(piece == null) piece = new Piece3(matrix);
+        if(piece == null) piece = new Piece(matrix);
         queue = new IntQueue();
 
         piece.set((byte) queue.next());
