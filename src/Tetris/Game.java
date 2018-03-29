@@ -24,6 +24,7 @@ public class Game {
     private FloatBuffer buffer;
 
     private int vertices;
+    private int lineVertices;
 
     private GLFWErrorCallback errorCallback;
 
@@ -34,13 +35,14 @@ public class Game {
 
     private double movementPeriod;
     private double lastMovement;
-    private final double increaseRatio = 0.05;
+    private final double increaseRatio = 0.01;
     private double lastPeriod;
 
     private boolean dropped;
 
     private Block[][] matrix;
     private Piece3 piece;
+    private IntQueue queue;
 
     private static final float scale = 0.09f; //static?
     private static final float translateX = -0.45f;
@@ -55,7 +57,7 @@ public class Game {
             {1f, 1f, 0f},
             {0f, 1f, 1f},
             {1f, 1f, 1f},
-            {0.3f, 0.3f, 0.3f}
+            {0.5f, 0.5f, 0.5f}
     };
 
     private Game(){
@@ -81,8 +83,9 @@ public class Game {
                     matrix[i][j].show = false;
 
         if(piece == null) piece = new Piece3(matrix);
+        queue = new IntQueue();
 
-        piece.set((byte) ThreadLocalRandom.current().nextInt(0, 6 + 1));
+        piece.set((byte) queue.next());
 
         movementPeriod = 1000;
 
@@ -159,11 +162,15 @@ public class Game {
 
             update();
 
-            if (piece.collides()) running = false;
+            boolean b = piece.collides();
+            if(b) running = false;
             else putPiece();
 
-            putGrid();
             putMatrix();
+
+            if(!b) putGhost();
+            putGrid();
+
             render();
 
             glfwSwapBuffers(window);
@@ -177,7 +184,7 @@ public class Game {
             Game.wait(targetTime - elapsed, now);
         }
 
-        try{Thread.sleep(1000);} catch (InterruptedException ignored){}
+        try{Thread.sleep(1000);} catch (InterruptedException ignored){} //finish time
     }
     private void dispose(){
         glDisableVertexAttribArray(0);
@@ -199,7 +206,7 @@ public class Game {
                 movementPeriod *= (1-increaseRatio);
 
                 piece.place();
-                piece.set((byte) ThreadLocalRandom.current().nextInt(0, 6 + 1));
+                piece.set((byte) queue.next());
             } else
                 piece.moveDown();
         }
@@ -236,18 +243,18 @@ public class Game {
         for(int y = 0; y < 20; y++)
             for(int x = 0; x < 10; x++){
                 if(matrix[y][x].show) {
-                    buffer.put(x * scale + translateX + border).put(y * scale + translateY + border)
+                    buffer.put(x * scale + translateX).put(y * scale + translateY)
                             .put(color[matrix[y][x].color]);
-                    buffer.put((x + 1) * scale + translateX - border).put(y * scale + translateY + border)
+                    buffer.put((x + 1) * scale + translateX).put(y * scale + translateY)
                             .put(color[matrix[y][x].color]);
-                    buffer.put((x + 1) * scale + translateX - border).put((y + 1) * scale + translateY - border)
+                    buffer.put((x + 1) * scale + translateX).put((y + 1) * scale + translateY)
                             .put(color[matrix[y][x].color]);
 
-                    buffer.put(x * scale + translateX + border).put(y * scale + translateY + border)
+                    buffer.put(x * scale + translateX).put(y * scale + translateY)
                             .put(color[matrix[y][x].color]);
-                    buffer.put((x + 1) * scale + translateX - border).put((y + 1) * scale + translateY - border)
+                    buffer.put((x + 1) * scale + translateX).put((y + 1) * scale + translateY)
                             .put(color[matrix[y][x].color]);
-                    buffer.put(x * scale + translateX + border).put((y + 1) * scale + translateY - border)
+                    buffer.put(x * scale + translateX).put((y + 1) * scale + translateY)
                             .put(color[matrix[y][x].color]);
 
                     vertices += 6;
@@ -259,45 +266,60 @@ public class Game {
         for(int j = 0; j < 4; j++)
             for(int i = 0; i < 4; i++)
                 if(piece.m[j][i]){
-                    buffer.put((x + i) * scale + translateX + border).put((y + j) * scale + translateY + border)
+                    buffer.put((x + i) * scale + translateX).put((y + j) * scale + translateY)
                             .put(color[piece.type]);
-                    buffer.put((x + i + 1) * scale + translateX - border).put((y + j) * scale + translateY + border)
+                    buffer.put((x + i + 1) * scale + translateX).put((y + j) * scale + translateY)
                             .put(color[piece.type]);
-                    buffer.put((x + i + 1) * scale + translateX - border).put((y + j + 1) * scale + translateY - border)
+                    buffer.put((x + i + 1) * scale + translateX).put((y + j + 1) * scale + translateY)
                             .put(color[piece.type]);
 
-                    buffer.put((x + i) * scale + translateX + border).put((y + j) * scale + translateY + border)
+                    buffer.put((x + i) * scale + translateX).put((y + j) * scale + translateY)
                             .put(color[piece.type]);
-                    buffer.put((x + i + 1) * scale + translateX - border).put((y + j + 1) * scale + translateY - border)
+                    buffer.put((x + i + 1) * scale + translateX).put((y + j + 1) * scale + translateY)
                             .put(color[piece.type]);
-                    buffer.put((x + i) * scale + translateX + border).put((y + j + 1) * scale + translateY - border)
+                    buffer.put((x + i) * scale + translateX).put((y + j + 1) * scale + translateY)
                             .put(color[piece.type]);
 
                     vertices += 6;
                 }
     }
     private void putGhost(){
+        int x = piece.x, y = piece.getGhostY();
+        for(int j = 0; j < 4; j++)
+            for(int i = 0; i < 4; i++)
+                if(piece.m[j][i]){
+                    buffer.put((x + i) * scale + translateX + border).put((y + j) * scale + translateY + border)
+                            .put(color[piece.type]);
+                    buffer.put((x + i + 1) * scale + translateX - border).put((y + j) * scale + translateY + border)
+                            .put(color[piece.type]);
+                    buffer.put((x + i + 1) * scale + translateX - border).put((y + j) * scale + translateY + border)
+                            .put(color[piece.type]);
+                    buffer.put((x + i + 1) * scale + translateX - border).put((y + j + 1) * scale + translateY - border)
+                            .put(color[piece.type]);
+                    buffer.put((x + i + 1) * scale + translateX - border).put((y + j + 1) * scale + translateY - border)
+                            .put(color[piece.type]);
+                    buffer.put((x + i) * scale + translateX + border).put((y + j + 1) * scale + translateY - border)
+                            .put(color[piece.type]);
+                    buffer.put((x + i) * scale + translateX + border).put((y + j + 1) * scale + translateY - border)
+                            .put(color[piece.type]);
+                    buffer.put((x + i) * scale + translateX + border).put((y + j) * scale + translateY + border)
+                            .put(color[piece.type]);
+
+                    lineVertices += 8;
+                }
     }
     private void putGrid(){
-        for(float x = 0f; x <= 0.99f; x += 0.09f) {
-            buffer.put(-0.4525f + x).put(-0.9025f).put(color[7]);
-            buffer.put(-0.4475f + x).put(-0.9025f).put(color[7]);
-            buffer.put(-0.4475f + x).put(0.9025f).put(color[7]);
-            buffer.put(-0.4525f + x).put(-0.9025f).put(color[7]);
-            buffer.put(-0.4475f + x).put(0.9025f).put(color[7]);
-            buffer.put(-0.4525f + x).put(0.9025f).put(color[7]);
+        for(float x = 0f; x <= 0.91f; x += 0.09f) {
+            buffer.put(-0.45f + x).put(+0.9f).put(color[7]);
+            buffer.put(-0.45f + x).put(-0.9f).put(color[7]);
 
-            vertices += 6;
+            lineVertices += 2;
         }
-        for(float y = 0f; y <= 1.89f; y += 0.09f) {
-            buffer.put(-0.4475f).put(-0.9025f + y).put(color[7]);
-            buffer.put(0.4475f).put(-0.9025f + y).put(color[7]);
-            buffer.put(0.4475f).put(-0.8975f + y).put(color[7]);
-            buffer.put(-0.4475f).put(-0.9025f + y).put(color[7]);
-            buffer.put(0.4475f).put(-0.8975f + y).put(color[7]);
-            buffer.put(-0.4475f).put(-0.8975f + y).put(color[7]);
+        for(float y = 0f; y <= 1.81f; y += 0.09f) {
+            buffer.put(-0.45f).put(-0.9f + y).put(color[7]);
+            buffer.put(0.45f).put(-0.9f + y).put(color[7]);
 
-            vertices += 6;
+            lineVertices += 2;
         }
     }
     private void render(){
@@ -312,8 +334,11 @@ public class Game {
 
         glDrawArrays(GL_TRIANGLES, 0, vertices);
 
+        glDrawArrays(GL_LINES, vertices, lineVertices);
+
         buffer.clear();
         vertices = 0;
+        lineVertices = 0;
     }
     private static void wait(double time, double start){
         while(System.currentTimeMillis() - start < time){

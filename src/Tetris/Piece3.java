@@ -126,7 +126,7 @@ public class Piece3{
                     if(m[j][i]){
                         if(y + i < 0 || y + i > 19) return;
                         if(x + 2 - j < 0 || x + 2 - j > 9) return;
-                        if(matrix[y+2-i][x+j].show) return;
+                        if(matrix[y+i][x+2-j].show) return;
                     }
             for(int i = 0; i < 2; i++){
                 boolean temp = m[0][i];
@@ -179,6 +179,22 @@ public class Piece3{
             for(int i = 0; i < 4; i++)
                 if(m[j][i] && (y + j == 0 || matrix[y+j-1][x+i].show))
                         return true;
+        return false;
+    }
+    public int getGhostY(){
+        int gy = y;
+        while(!collides(gy--));
+        return ++gy;
+    }
+    private boolean collides(int gy){
+        for(int j = 0; j < 4; j++)
+            for(int i = 0; i < 4; i++)
+                if(m[j][i]){
+                    if(gy + j <= 0)
+                        return true;
+                    if(matrix[gy + j - 1][x + i].show)
+                        return true;
+                }
         return false;
     }
 }
