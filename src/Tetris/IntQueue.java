@@ -30,4 +30,8 @@ public class IntQueue{
         }
         return q[i++];
     }
+    public void reset(){
+        i = 0;
+        shuffle();
+    }
 }

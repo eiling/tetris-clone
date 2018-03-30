@@ -34,14 +34,17 @@ public class Game {
 
     private double movementPeriod;
     private double lastMovement;
-    private final double increaseRatio = 0.01;
+    private final double increaseRatio = 0.02;
     private double lastPeriod;
 
     private boolean dropped;
 
     private Block[][] matrix;
     private Piece piece;
+    private Piece next;
     private IntQueue queue;
+    private Piece held;
+    private boolean canHold;
 
     private static final float scale = 0.09f; //static?
     private static final float translateX = -0.45f;
@@ -62,35 +65,12 @@ public class Game {
     private Game(){
         init();
         do {
-            setup();
             //start screen
+            setup();
             loop();
             //game over screen
         } while(restart);
         dispose();
-    }
-    private void setup(){
-        if(matrix == null) {
-            matrix = new Block[20][10];
-            for (int i = 0; i < 20; i++)
-                for(int j = 0; j < 10; j++) {
-                    matrix[i][j] = new Block();
-                }
-        } else
-            for (int i = 0; i < 20; i++)
-                for(int j = 0; j < 10; j++)
-                    matrix[i][j].show = false;
-
-        if(piece == null) piece = new Piece(matrix);
-        queue = new IntQueue();
-
-        piece.set((byte) queue.next());
-
-        movementPeriod = 1000;
-
-        dropped = false;
-
-        restart = false;
     }
     private void init(){
         errorCallback = GLFWErrorCallback.createPrint();
@@ -143,12 +123,40 @@ public class Game {
             else if(key == GLFW_KEY_X && action == GLFW_PRESS) piece.rotate();
             else if(key == GLFW_KEY_DOWN && action == GLFW_PRESS) startFastFwd();
             else if(key == GLFW_KEY_DOWN && action == GLFW_RELEASE) stopFastFwd();
+            else if(key == GLFW_KEY_C && action == GLFW_PRESS) hold();
             else if(key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
                 piece.hardDrop();
                 dropped = true;
             }
             else if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) running = false;
         }));
+    }
+    private void setup(){
+        if(matrix == null) {
+            matrix = new Block[20][10];
+            for (int i = 0; i < 20; i++)
+                for(int j = 0; j < 10; j++) {
+                    matrix[i][j] = new Block();
+                }
+        } else
+            for (int i = 0; i < 20; i++)
+                for(int j = 0; j < 10; j++)
+                    matrix[i][j].show = false;
+
+        if(piece == null) piece = new Piece(matrix);
+        if(next == null) next = new Piece(matrix);
+        if(queue ==  null) queue = new IntQueue();
+        else queue.reset();
+
+        piece.set((byte) queue.next());
+        next.set((byte) queue.next());
+
+        movementPeriod = 1000;
+
+        dropped = false;
+        canHold = true;
+
+        restart = false;
     }
     private void loop(){
         try{Thread.sleep(1000);} catch (InterruptedException ignored){} //prep time
@@ -161,13 +169,16 @@ public class Game {
 
             update();
 
-            boolean b = piece.collides();
-            if(b) running = false;
-            else putPiece();
-
             putMatrix();
 
-            if(!b) putGhost();
+            if(piece.collides()) running = false;
+            else{
+                putPiece();
+                putHeld();
+                putNext();
+                putGhost();
+            }
+
             putGrid();
 
             render();
@@ -205,7 +216,13 @@ public class Game {
                 movementPeriod *= (1-increaseRatio);
 
                 piece.place();
-                piece.set((byte) queue.next());
+
+                Piece temp = piece;
+                piece = next;
+                next = temp;
+                next.set((byte) queue.next());
+
+                canHold = true;
             } else
                 piece.moveDown();
         }
@@ -237,6 +254,21 @@ public class Game {
     }
     private void stopFastFwd(){
         movementPeriod = lastPeriod;
+    }
+    private void hold(){
+        if(!canHold) return;
+        if(held == null) {
+            held = piece;
+            piece = next;
+            next = new Piece(matrix);
+            next.set((byte) queue.next());
+        } else{
+            Piece temp = held;
+            held = piece;
+            piece = temp;
+        }
+        held.set(held.type); //reset x and y
+        canHold = false;
     }
     private void putMatrix(){
         for(int y = 0; y < 20; y++)
@@ -305,6 +337,49 @@ public class Game {
                             .put(color[piece.type]);
 
                     lineVertices += 8;
+                }
+    }
+    private void putNext(){
+        for(int j = 0; j < 4; j++)
+            for(int i = 0; i < 4; i++)
+                if(next.m[j][i]){
+                    buffer.put((11 + i) * scale + translateX).put((16 + j) * scale + translateY)
+                            .put(color[next.type]);
+                    buffer.put((11 + i + 1) * scale + translateX).put((16 + j) * scale + translateY)
+                            .put(color[next.type]);
+                    buffer.put((11 + i + 1) * scale + translateX).put((16 + j + 1) * scale + translateY)
+                            .put(color[next.type]);
+
+                    buffer.put((11 + i) * scale + translateX).put((16 + j) * scale + translateY)
+                            .put(color[next.type]);
+                    buffer.put((11 + i + 1) * scale + translateX).put((16 + j + 1) * scale + translateY)
+                            .put(color[next.type]);
+                    buffer.put((11 + i) * scale + translateX).put((16 + j + 1) * scale + translateY)
+                            .put(color[next.type]);
+
+                    vertices += 6;
+                }
+    }
+    private void putHeld(){
+        if(held == null) return;
+        for(int j = 0; j < 4; j++)
+            for(int i = 0; i < 4; i++)
+                if(held.m[j][i]){
+                    buffer.put((-5 + i) * scale + translateX).put((16 + j) * scale + translateY)
+                            .put(color[held.type]);
+                    buffer.put((-5 + i + 1) * scale + translateX).put((16 + j) * scale + translateY)
+                            .put(color[held.type]);
+                    buffer.put((-5 + i + 1) * scale + translateX).put((16 + j + 1) * scale + translateY)
+                            .put(color[held.type]);
+
+                    buffer.put((-5 + i) * scale + translateX).put((16 + j) * scale + translateY)
+                            .put(color[held.type]);
+                    buffer.put((-5 + i + 1) * scale + translateX).put((16 + j + 1) * scale + translateY)
+                            .put(color[held.type]);
+                    buffer.put((-5 + i) * scale + translateX).put((16 + j + 1) * scale + translateY)
+                            .put(color[held.type]);
+
+                    vertices += 6;
                 }
     }
     private void putGrid(){
