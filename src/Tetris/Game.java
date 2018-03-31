@@ -27,7 +27,6 @@ public class Game {
 
     private GLFWErrorCallback errorCallback;
 
-    private boolean running;
     private boolean restart;
 
     private final double targetTime = 1000 / 30;
@@ -59,7 +58,8 @@ public class Game {
             {1f, 1f, 0f},
             {0f, 1f, 1f},
             {1f, 1f, 1f},
-            {0.5f, 0.5f, 0.5f}
+            {0.5f, 0.5f, 0.5f},
+            {0f, 0f, 0f}
     };
 
     private Game(){
@@ -128,7 +128,7 @@ public class Game {
                 piece.hardDrop();
                 dropped = true;
             }
-            else if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) running = false;
+            else if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) System.exit(0);
         }));
     }
     private void setup(){
@@ -163,15 +163,14 @@ public class Game {
 
         lastMovement = System.currentTimeMillis();
 
-        running = true;
-        while(running){
+        while(true){
             double start = System.currentTimeMillis();
 
             update();
 
             putMatrix();
 
-            if(piece.collides()) running = false;
+            if(piece.collides()) break;
             else{
                 putPiece();
                 putHeld();
@@ -180,14 +179,14 @@ public class Game {
             }
 
             putGrid();
+            putBlackGrid();
 
             render();
 
             glfwSwapBuffers(window);
             glfwPollEvents();
 
-            if(glfwWindowShouldClose(window))
-                running = false;
+            if(glfwWindowShouldClose(window)) System.exit(0);
 
             double now = System.currentTimeMillis();
             double elapsed = now - start;
@@ -383,15 +382,43 @@ public class Game {
                 }
     }
     private void putGrid(){
-        for(float x = 0f; x <= 0.91f; x += 0.09f) {
-            buffer.put(-0.45f + x).put(+0.9f).put(color[7]);
-            buffer.put(-0.45f + x).put(-0.9f).put(color[7]);
+        for(int x = 0; x <= 10; x++) {
+            buffer.put(x * scale + translateX).put(0 * scale + translateY).put(color[7]);
+            buffer.put(x * scale + translateX).put(20 * scale + translateY).put(color[7]);
 
             lineVertices += 2;
         }
-        for(float y = 0f; y <= 1.81f; y += 0.09f) {
-            buffer.put(-0.45f).put(-0.9f + y).put(color[7]);
-            buffer.put(0.45f).put(-0.9f + y).put(color[7]);
+        for(int y = 0; y <= 20; y++) {
+            buffer.put(0 * scale + translateX).put(y * scale + translateY).put(color[7]);
+            buffer.put(10 * scale + translateX).put(y * scale + translateY).put(color[7]);
+
+            lineVertices += 2;
+        }
+    }
+    private void putBlackGrid(){
+        //held
+        for(int x = -5; x <= -1; x++) {
+            buffer.put(x * scale + translateX).put(16 * scale + translateY).put(color[8]);
+            buffer.put(x * scale + translateX).put(20 * scale + translateY).put(color[8]);
+
+            lineVertices += 2;
+        }
+        for(int y = 16; y <= 20; y++) {
+            buffer.put(-5 * scale + translateX).put(y * scale + translateY).put(color[8]);
+            buffer.put(-1 * scale + translateX).put(y * scale + translateY).put(color[8]);
+
+            lineVertices += 2;
+        }
+        //next
+        for(int x = 11; x <= 15; x++) {
+            buffer.put(x * scale + translateX).put(16 * scale + translateY).put(color[8]);
+            buffer.put(x * scale + translateX).put(20 * scale + translateY).put(color[8]);
+
+            lineVertices += 2;
+        }
+        for(int y = 16; y <= 20; y++) {
+            buffer.put(11 * scale + translateX).put(y * scale + translateY).put(color[8]);
+            buffer.put(15 * scale + translateX).put(y * scale + translateY).put(color[8]);
 
             lineVertices += 2;
         }
