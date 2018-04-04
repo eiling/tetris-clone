@@ -17,9 +17,11 @@ public class Piece{
         for(int j = 0; j < 4; j ++) for(int i = 0; i < 4; i++) m[j][i] = false;
 
         if(type == 0){
-            m[1][0] = true; m[1][1] = true;
-            m[0][0] = true; m[0][1] = true;
-            y = 18; x = 4;
+            m[1][1] = true;
+            m[1][2] = true;
+            m[2][1] = true;
+            m[2][2] = true;
+            y = 17; x = 3;
         }
         if(type == 1){
             m[1][0] = true;

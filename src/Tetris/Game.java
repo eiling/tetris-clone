@@ -45,6 +45,17 @@ public class Game {
     private Piece held;
     private boolean canHold;
 
+    private boolean[] lastKeyState = new boolean[7];
+    private volatile boolean[] keyState = new boolean[7];
+
+    private static final byte UP = 0;
+    private static final byte DOWN = 1;
+    private static final byte LEFT = 2;
+    private static final byte RIGHT = 3;
+    private static final byte SPACE = 4;
+    private static final byte X = 5;
+    private static final byte C = 6;
+
     private static final float scale = 0.09f; //static?
     private static final float translateX = -0.45f;
     private static final float translateY = -0.9f;
@@ -116,7 +127,7 @@ public class Game {
         glEnableVertexAttribArray(1);
         glVertexAttribPointer(1, 3, GL_FLOAT, false, 5*Float.BYTES, 2*Float.BYTES);
 
-        glfwSetKeyCallback(window, GLFWKeyCallback.create((window, key, scancode, action, mods) -> {
+        /*glfwSetKeyCallback(window, GLFWKeyCallback.create((window, key, scancode, action, mods) -> {
             if(key == GLFW_KEY_LEFT && (action == GLFW_PRESS || action == GLFW_REPEAT)) piece.moveLeft();
             else if(key == GLFW_KEY_RIGHT && (action == GLFW_PRESS || action == GLFW_REPEAT)) piece.moveRight();
             else if(key == GLFW_KEY_UP && action == GLFW_PRESS) piece.aRotate();
@@ -128,6 +139,18 @@ public class Game {
                 piece.hardDrop();
                 dropped = true;
             }
+            else if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) System.exit(0);
+        }));*/
+
+        glfwSetKeyCallback(window, GLFWKeyCallback.create((window, key, scancode, action, mods) -> {
+            if(key == GLFW_KEY_LEFT && (action == GLFW_PRESS || action == GLFW_REPEAT)) keyState[LEFT] = true;
+            else if(key == GLFW_KEY_RIGHT && (action == GLFW_PRESS || action == GLFW_REPEAT)) keyState[RIGHT] = true;
+            else if(key == GLFW_KEY_UP && action == GLFW_PRESS) keyState[UP] = true;
+            else if(key == GLFW_KEY_X && action == GLFW_PRESS) keyState[X] = true;
+            else if(key == GLFW_KEY_DOWN && action == GLFW_PRESS) startFastFwd();
+            else if(key == GLFW_KEY_DOWN && action == GLFW_RELEASE) stopFastFwd();
+            else if(key == GLFW_KEY_C && action == GLFW_PRESS) keyState[C] = true;
+            else if(key == GLFW_KEY_SPACE && action == GLFW_PRESS) keyState[SPACE] = true;
             else if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) System.exit(0);
         }));
     }
@@ -166,17 +189,16 @@ public class Game {
         while(true){
             double start = System.currentTimeMillis();
 
+            handleInput();
             update();
 
-            putMatrix();
-
             if(piece.collides()) break;
-            else{
-                putPiece();
-                putHeld();
-                putNext();
-                putGhost();
-            }
+
+            putMatrix();
+            putPiece();
+            putHeld();
+            putNext();
+            putGhost();
 
             putGrid();
             putBlackGrid();
@@ -204,6 +226,24 @@ public class Game {
         glDeleteVertexArrays(vertexArrayID);
 
         glfwTerminate();
+    }
+    private void handleInput(){
+        for(byte i = 0; i < 7; i++) {
+            lastKeyState[i] = keyState[i];
+            keyState[i] = false;
+        }
+
+        if(lastKeyState[LEFT]) piece.moveLeft();
+        else if(lastKeyState[RIGHT]) piece.moveRight();
+        else if(lastKeyState[UP]) piece.aRotate();
+        else if(lastKeyState[X]) piece.rotate();
+        //else if(key == GLFW_KEY_DOWN && action == GLFW_PRESS) startFastFwd();
+        //else if(key == GLFW_KEY_DOWN && action == GLFW_RELEASE) stopFastFwd();
+        else if(lastKeyState[C]) hold();
+        else if(lastKeyState[SPACE]) {
+            piece.hardDrop();
+            dropped = true;
+        }
     }
     private void update(){
         double now = System.currentTimeMillis();
@@ -445,6 +485,9 @@ public class Game {
         while(System.currentTimeMillis() - start < time){
             try{ Thread.sleep(1); } catch (InterruptedException ignored) {}
         }
+    }
+    private void startScreen(){
+
     }
     public static void main(String[] args){
         new Game();
